@@ -23,12 +23,12 @@ def clean_data(df):
 
     #Convert category values to just numbers 0 or 1
     for column in categories:
-    #print(column)
-    # set each value to be the last character of the string
-    categories[column] =list(map(lambda x:x[-1:],pd.Series(categories[column].astype(str)).values) )
+        #print(column)
+        # set each value to be the last character of the string
+        categories[column] =list(map(lambda x:x[-1:],pd.Series(categories[column].astype(str)).values) )
 
-    # convert column from string to numeric
-    categories[column] = pd.Series(categories[column].astype(int)).values
+        # convert column from string to numeric
+        categories[column] = pd.Series(categories[column].astype(int)).values
 
     # drop the original categories column from `df`
     df.drop(columns=['categories'],index=1, inplace=True)
