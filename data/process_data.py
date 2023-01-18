@@ -7,15 +7,45 @@ from sqlalchemy import create_engine
 def load_data(messages_filepath, categories_filepath):
     messages =pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
-    
+
     return pd.merge(messages,categories,"inner",on="id")
 
 def clean_data(df):
-    pass
+    categories=pd.Series(df.categories).str.split(";",expand=True)
+    # select the first row of the categories dataframe
+    row = categories.iloc[0:1,:]
+    # use this row to extract a list of new column names for categories.
+    # one way is to apply a lambda function that takes everything
+    # up to the second to last character of each string with slicing
+    category_colnames = [row.iloc[0:1,i].values[0][0:-2] for i in range(0,row.shape[1])]
+    # rename the columns of `categories`
+    categories.columns = category_colnames
+
+    #Convert category values to just numbers 0 or 1
+    for column in categories:
+    #print(column)
+    # set each value to be the last character of the string
+    categories[column] =list(map(lambda x:x[-1:],pd.Series(categories[column].astype(str)).values) )
+
+    # convert column from string to numeric
+    categories[column] = pd.Series(categories[column].astype(int)).values
+
+    # drop the original categories column from `df`
+    df.drop(columns=['categories'],index=1, inplace=True)
+
+    # concatenate the original dataframe with the new `categories` dataframe
+    df=pd.concat([df,categories],axis=1)
+
+    # drop duplicates
+    df.drop_duplicates(inplace=True)
+
+    return df
+
 
 
 def save_data(df, database_filename):
-    pass  
+    engine = create_engine("sqlite:///"+database_filename)#'sqlite:///mydb.db')
+    df.to_sql('mytable', engine, index=False)
 
 
 def main():
@@ -29,12 +59,12 @@ def main():
 
         print('Cleaning data...')
         df = clean_data(df)
-        
+
         print('Saving data...\n    DATABASE: {}'.format(database_filepath))
         save_data(df, database_filepath)
-        
+
         print('Cleaned data saved to database!')
-    
+
     else:
         print('Please provide the filepaths of the messages and categories '\
               'datasets as the first and second argument respectively, as '\
