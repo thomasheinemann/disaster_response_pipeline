@@ -37,8 +37,9 @@ def load_data(database_filepath):
     engine = create_engine("sqlite:///"+database_filepath)
     df = pd.read_sql_table('mytable', engine)
     df=df[[df.message[i] is not None for i in range(0, len(df))]]
-    X = df.iloc[:,1:2]
-    Y = df.iloc[:,4:]
+    X = df.message.iloc[:8000]#,1:2]
+    Y = df.iloc[:8000,4:]
+
     return X,Y, Y.columns
 
 def tokenize(text):
@@ -72,24 +73,24 @@ def build_model():
 
 def evaluate_model(model, X_test, Y_test, category_names):
     print("Evaluate categorical data from test set")
-    y_pred=pd.DataFrame(model.predict(X_test['message']))
+    y_pred=pd.DataFrame(model.predict(X_test))
 
     print("\n")
     print("Evaluate Categorical estimator:")
     print("\n")
     for i in range(0,10,1):
-        print("Category: ",y_test.columns[i])
-        print(classification_report(pd.DataFrame(y_test.values).iloc[:,i], y_pred.iloc[:,i],labels=[0,1]))#, target_names=target_names))
+        print("Category: ",Y_test.columns[i])
+        print(classification_report(pd.DataFrame(Y_test.values).iloc[:,i], y_pred.iloc[:,i],labels=[0,1]))#, target_names=target_names))
 
 
 def save_model(model, model_filepath):
     import io
-    import pickle
+    import joblib
 
     #class MyClass:
     #    my_attribute = 1
     outfile = open(model_filepath,'wb')
-    pickle.dump(cv,outfile)
+    joblib.dump(model,outfile,compress=5)
     outfile.close()
 
 
@@ -102,7 +103,8 @@ def main():
 
         print('Building model...')
         model = build_model()
-
+        print(X_train.shape)
+        print(Y_train.shape)
         print('Training model...')
         model.fit(X_train, Y_train)
 
