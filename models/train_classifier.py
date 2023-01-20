@@ -14,7 +14,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.multioutput import MultiOutputClassifier
 #from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+
+#classifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 
 from sklearn.metrics import classification_report
 
@@ -37,8 +43,8 @@ def load_data(database_filepath):
     engine = create_engine("sqlite:///"+database_filepath)
     df = pd.read_sql_table('mytable', engine)
     df=df[[df.message[i] is not None for i in range(0, len(df))]]
-    X = df.message.iloc[:8000]#,1:2]
-    Y = df.iloc[:8000,4:]
+    X = df.message.iloc[:]#,1:2]
+    Y = df.iloc[:,4:]
 
     return X,Y, Y.columns
 
@@ -63,9 +69,9 @@ def tokenize(text):
 def build_model():
 
     pipeline = Pipeline([
-        ('vect', CountVectorizer(tokenizer=word_tokenize)),
+        ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
-        ('clf',MultiOutputClassifier(estimator=RandomForestClassifier(random_state=0)))
+        ('clf',MultiOutputClassifier(estimator=RandomForestClassifier(random_state=0,n_estimators = 20)))
     ])
 
     return pipeline
@@ -90,7 +96,7 @@ def save_model(model, model_filepath):
     #class MyClass:
     #    my_attribute = 1
     outfile = open(model_filepath,'wb')
-    joblib.dump(model,outfile,compress=5)
+    joblib.dump(model,outfile,compress=7)
     outfile.close()
 
 
