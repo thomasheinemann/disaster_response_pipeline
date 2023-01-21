@@ -37,6 +37,13 @@ import pandas as pd
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
+#libraries for pickling
+import io
+try:
+    import joblib
+except:
+    import nltk.joblib as joblib
+
 
 def load_data(database_filepath):
     # load data from database
@@ -45,6 +52,8 @@ def load_data(database_filepath):
     df=df[[df.message[i] is not None for i in range(0, len(df))]]
     X = df.message.iloc[:]#,1:2]
     Y = df.iloc[:,4:]
+    print(Y.head(5))
+    print(sys.version)
 
     return X,Y, Y.columns
 
@@ -67,14 +76,25 @@ def tokenize(text):
 
 
 def build_model():
-
+    #import gensim
+    from gensim.models import Word2Vec
     pipeline = Pipeline([
-        ('vect', CountVectorizer(tokenizer=tokenize)),
-        ('tfidf', TfidfTransformer()),
+        #('vect', CountVectorizer(tokenizer=tokenize)),
+        #('tfidf', TfidfTransformer()),
+        # Create CBOW model
+        ('w2v',Word2Vec(data, min_count = 1, vector_size = 100, window = 5)),
         ('clf',MultiOutputClassifier(estimator=RandomForestClassifier(random_state=0,n_estimators = 20)))
     ])
+    parameters = {
+    #'vect__tokenizer': (word_tokenize,tokenize),
+    'clf__estimator__n_estimators': [1,4,1]
+    #'clf__estimator': (RandomForestClassifier(random_state=0), DecisionTreeClassifier(random_state=0))
+    #'clf__estimator': (RandomForestClassifier(random_state=0), RandomForestClassifier(random_state=0))
+    }
 
-    return pipeline
+
+    cv = GridSearchCV(pipeline,param_grid=parameters)
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -90,8 +110,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    import io
-    import joblib
+
 
     #class MyClass:
     #    my_attribute = 1
