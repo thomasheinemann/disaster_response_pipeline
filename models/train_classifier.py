@@ -77,44 +77,48 @@ def tokenize(text):
 
 
 def build_model():
-    import gensim
-    from gensim.models import Word2Vec as Word2Vec
-    corpus_text='das ist sehr gut. das ist stil'
-    data = []
-    # iterate through each sentence in the file
-    for i in sent_tokenize(corpus_text):
-        temp = []
-        # tokenize the sentence into words
-        for j in word_tokenize(i):
-            temp.append(j.lower())
-        data.append(temp)
     
-    modi=gensim.models.Word2Vec(data, min_count = 1,size = 10, window = 5,sg=0,iter=40)
-    #Word2Vec(sentences=data,size=50,window=10,iter=20)
-    print(modi.similarity('das','ist'))
-    print(modi.similarity('das','gut'))
-    print("testi")
-    print(data)
-    print(modi.wv['das'])
-    #quit()
     
-    from gensim.test.utils import common_texts
-
-    from gensim.models.doc2vec import Doc2Vec, TaggedDocument
-    #quit()
-
     
     common_texts=[['das ist sehr gut.'],['das ist stil'],['das macht nichts.']]
-    documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(common_texts)]
+    
+    from sklearn.base import BaseEstimator, TransformerMixin
+    from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+    
+    class text2vec(BaseEstimator, TransformerMixin):
+        model=Doc2Vec()
+        
+        
+        def fit(self, X, y=None):
+            
+            documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(X)]
+            #print(documents)
+            self.model = Doc2Vec(documents, vector_size=2, window=2, min_count=1, workers=4)
+            
+            #vector = model.infer_vector(sent_tokenize('das ist sehr gut.'))
+            return self
+        def bla(self,X):
+            return self.model.infer_vector(sent_tokenize(X))
+        
+        def transform(self, X):
+            #X_tagged = pd.Series(X).apply(self.starting_verb)
+            #print(self.model.infer_vector(sent_tokenize(X[1])))
+            #self.model.infer_vector(sent_tokenize(X[1]))
+            #return self#pd.Series(X)
+            print( pd.Series(X))
+            print( pd.Series(X).apply(self.bla))
+            return pd.DataFrame(pd.Series(X).apply(self.bla))
+            #return self #model.infer_vector(sent_tokenize('das ist sehr gut.'))# pd.DataFrame(X_tagged)
+    
 
-    model = Doc2Vec(documents, vector_size=2, window=2, min_count=1, workers=4)
-    vector = model.infer_vector(sent_tokenize('das ist sehr gut.'))
-    vector2 = model.infer_vector(sent_tokenize('das ist stil'))
-    vector3 = model.infer_vector(sent_tokenize('das ist stil.'))
-    print(vector)
-    print(vector2)
-    print(vector3)
-    quit()
+
+    #cvb=text2vec()
+    #cvb.fit(common_texts,[1,1,0])
+    
+    
+    
+    
+    #quit()
 
     
     
@@ -129,12 +133,14 @@ def build_model():
     
     
     pipeline = Pipeline([
-        ('vect', CountVectorizer(tokenizer=tokenize)),
-        ('tfidf', TfidfTransformer()),
+        ('vect', text2vec()),
+        #('vect', CountVectorizer(tokenizer=tokenize)),
+        #('tfidf', TfidfTransformer()),
         # Create CBOW model
         #('w2v',Word2Vec(min_count = 1, vector_size = 100, window = 5)),
         ('clf',MultiOutputClassifier(estimator=RandomForestClassifier(random_state=0,n_estimators = 20)))
     ])
+    #quit()
     parameters = {
     #'vect__tokenizer': (word_tokenize,tokenize),
     'clf__estimator__n_estimators': [1,4,1]
