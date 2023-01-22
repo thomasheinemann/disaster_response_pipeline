@@ -105,8 +105,8 @@ def build_model():
             #print(self.model.infer_vector(sent_tokenize(X[1])))
             #self.model.infer_vector(sent_tokenize(X[1]))
             #return self#pd.Series(X)
-            print( pd.Series(X))
-            print( pd.Series(X).apply(self.bla))
+            #####print( pd.Series(X))
+            print( pd.Series(X).apply(self.bla).to_frame().iloc[:10,0])
             return pd.DataFrame(pd.Series(X).apply(self.bla))
             #return self #model.infer_vector(sent_tokenize('das ist sehr gut.'))# pd.DataFrame(X_tagged)
     
