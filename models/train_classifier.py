@@ -37,6 +37,43 @@ import pandas as pd
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
+
+
+
+#libraries for transformations
+
+from sklearn.base import BaseEstimator, TransformerMixin
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+
+class text2vec(BaseEstimator, TransformerMixin):
+    model=Doc2Vec()
+
+
+    def fit(self, X, y=None):
+
+        documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(X)]
+        #print(documents)
+        self.model = Doc2Vec(documents, vector_size=5, window=2, min_count=1, workers=4)
+
+        #vector = model.infer_vector(sent_tokenize('das ist sehr gut.'))
+        return self
+    def bla(self,X):
+        return self.model.infer_vector(sent_tokenize(X))
+
+    def transform(self, X):
+        #X_tagged = pd.Series(X).apply(self.starting_verb)
+        #print(self.model.infer_vector(sent_tokenize(X[1])))
+        #self.model.infer_vector(sent_tokenize(X[1]))
+        #return self#pd.Series(X)
+        #####print( pd.Series(X))
+        #print(X.head(10))
+        #print( pd.Series(X).apply(self.bla).apply(pd.Series))
+        return pd.Series(X).apply(self.bla).apply(pd.Series)
+    #return self #model.infer_vector(sent_tokenize('das ist sehr gut.'))# pd.DataFrame(X_tagged)
+
+
+
+
 #libraries for pickling
 import io
 try:
@@ -77,59 +114,6 @@ def tokenize(text):
 
 
 def build_model():
-    
-    
-    
-    common_texts=[['das ist sehr gut.'],['das ist stil'],['das macht nichts.']]
-    
-    from sklearn.base import BaseEstimator, TransformerMixin
-    from gensim.models.doc2vec import Doc2Vec, TaggedDocument
-    
-    class text2vec(BaseEstimator, TransformerMixin):
-        model=Doc2Vec()
-        
-        
-        def fit(self, X, y=None):
-            
-            documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(X)]
-            #print(documents)
-            self.model = Doc2Vec(documents, vector_size=2, window=2, min_count=1, workers=4)
-            
-            #vector = model.infer_vector(sent_tokenize('das ist sehr gut.'))
-            return self
-        def bla(self,X):
-            return self.model.infer_vector(sent_tokenize(X))
-        
-        def transform(self, X):
-            #X_tagged = pd.Series(X).apply(self.starting_verb)
-            #print(self.model.infer_vector(sent_tokenize(X[1])))
-            #self.model.infer_vector(sent_tokenize(X[1]))
-            #return self#pd.Series(X)
-            #####print( pd.Series(X))
-            print( pd.Series(X).apply(self.bla).to_frame().iloc[:10,0])
-            return pd.DataFrame(pd.Series(X).apply(self.bla))
-            #return self #model.infer_vector(sent_tokenize('das ist sehr gut.'))# pd.DataFrame(X_tagged)
-    
-
-
-    #cvb=text2vec()
-    #cvb.fit(common_texts,[1,1,0])
-    
-    
-    
-    
-    #quit()
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    #test ende
     
     
     pipeline = Pipeline([

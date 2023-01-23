@@ -12,6 +12,45 @@ from plotly.graph_objs import Bar
 import joblib
 
 
+
+
+
+###########
+from sklearn.base import BaseEstimator, TransformerMixin
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+
+class text2vec(BaseEstimator, TransformerMixin):
+    model=Doc2Vec()
+
+
+    def fit(self, X, y=None):
+
+        documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(X)]
+        #print(documents)
+        self.model = Doc2Vec(documents, vector_size=5, window=2, min_count=1, workers=4)
+
+        #vector = model.infer_vector(sent_tokenize('das ist sehr gut.'))
+        return self
+    def bla(self,X):
+        return self.model.infer_vector(sent_tokenize(X))
+
+    def transform(self, X):
+        #X_tagged = pd.Series(X).apply(self.starting_verb)
+        #print(self.model.infer_vector(sent_tokenize(X[1])))
+        #self.model.infer_vector(sent_tokenize(X[1]))
+        #return self#pd.Series(X)
+        #####print( pd.Series(X))
+        #print(X.head(10))
+        #print( pd.Series(X).apply(self.bla).apply(pd.Series))
+        return pd.Series(X).apply(self.bla).apply(pd.Series)
+    #return self #model.infer_vector(sent_tokenize('das ist sehr gut.'))# pd.DataFrame(X_tagged)
+#########
+
+
+
+
+
+
 from sqlalchemy import create_engine
 
 
