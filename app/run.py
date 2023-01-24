@@ -16,6 +16,9 @@ import joblib
 
 
 ###########
+
+from nltk.tokenize import sent_tokenize
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 

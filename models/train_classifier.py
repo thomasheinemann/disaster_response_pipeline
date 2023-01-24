@@ -12,7 +12,6 @@ from sklearn.pipeline import FeatureUnion
 #
 from sklearn.model_selection import train_test_split
 from sklearn.multioutput import MultiOutputClassifier
-#from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 
 #classifier
@@ -53,7 +52,7 @@ class text2vec(BaseEstimator, TransformerMixin):
 
         documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(X)]
         #print(documents)
-        self.model = Doc2Vec(documents, vector_size=5, window=2, min_count=1, workers=4)
+        self.model = Doc2Vec(documents, vector_size=2, window=10, min_count=1, workers=4)
 
         #vector = model.infer_vector(sent_tokenize('das ist sehr gut.'))
         return self
@@ -79,7 +78,7 @@ import io
 try:
     import joblib
 except:
-    import nltk.joblib as joblib
+    from sklearn.externals import joblib as joblib
 #tetlibs
 from nltk.tokenize import sent_tokenize
 
@@ -114,14 +113,12 @@ def tokenize(text):
 
 
 def build_model():
-    
-    
+
+
     pipeline = Pipeline([
         ('vect', text2vec()),
         #('vect', CountVectorizer(tokenizer=tokenize)),
         #('tfidf', TfidfTransformer()),
-        # Create CBOW model
-        #('w2v',Word2Vec(min_count = 1, vector_size = 100, window = 5)),
         ('clf',MultiOutputClassifier(estimator=RandomForestClassifier(random_state=0,n_estimators = 20)))
     ])
     #quit()
