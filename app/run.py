@@ -1,76 +1,38 @@
 import json
-import plotly
 import pandas as pd
 
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
-#from sklearn.externals import joblib
-import joblib
 
+import plotly
+from plotly.graph_objs import Bar, Heatmap
 
+#libraries for pickling
+import io
+try:
+    import joblib
+except:
+    from sklearn.externals import joblib
+from sqlalchemy import create_engine
 
 
 
 ###########
-
-from nltk.tokenize import sent_tokenize
-
-from sklearn.base import BaseEstimator, TransformerMixin
-from gensim.models.doc2vec import Doc2Vec, TaggedDocument
-
-class text2vec(BaseEstimator, TransformerMixin):
-    model=Doc2Vec()
+import sys
+sys.path.append('../models/')
+from transformer_module import tokenize, w2v
+from adjusted_classifier import adjusted_classifier
 
 
-    def fit(self, X, y=None):
+#heatmap
+# import plotly.express as px
 
-        #documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(X)]
-        documents = [TaggedDocument(''.join(tokenize(doc)), [i]) for i, doc in enumerate(X)]
-        #print(documents)
-        self.model = Doc2Vec(documents, vector_size=2, window=10, min_count=1, workers=4)
-
-        #vector = model.infer_vector(sent_tokenize('das ist sehr gut.'))
-        return self
-    def bla(self,X):
-        #return self.model.infer_vector(sent_tokenize(X))
-        return self.model.infer_vector(sent_tokenize(''.join(tokenize(X))))
-
-    def transform(self, X):
-        #X_tagged = pd.Series(X).apply(self.starting_verb)
-        #print(self.model.infer_vector(sent_tokenize(X[1])))
-        #self.model.infer_vector(sent_tokenize(X[1]))
-        #return self#pd.Series(X)
-        #####print( pd.Series(X))
-        #print(X.head(10))
-        #print( pd.Series(X).apply(self.bla).apply(pd.Series))
-        return pd.Series(X).apply(self.bla).apply(pd.Series)
-    #return self #model.infer_vector(sent_tokenize('das ist sehr gut.'))# pd.DataFrame(X_tagged)
-#########
-
-
-
-
-
-
-from sqlalchemy import create_engine
 
 
 app = Flask(__name__)
 
-def tokenize(text):
-    tokens = word_tokenize(text)
-    lemmatizer = WordNetLemmatizer()
 
-    clean_tokens = []
-    for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tokens.append(clean_tok)
-
-    return clean_tokens
 
 # load data
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
@@ -86,31 +48,63 @@ model = joblib.load("../models/classifier.pkl")
 def index():
 
     # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
-    genre_counts = df.groupby('genre').count()['message']
-    genre_names = list(genre_counts.index)
 
-    # create visuals
-    # TODO: Below is an example - modify to create your own visuals
+    df2 = df.iloc[:,4:]
+    sample_counts=df2.sum(axis=0)
+    all_counts=df2.count(axis=0)[0]
+
+
+    df3=[df2[df2.iloc[:,i]==0].sum(axis=0) for i in range(len(df2.columns))]
+    df4=[df2[df2.iloc[:,i]==1].sum(axis=0) for i in range(len(df2.columns))]
+
+
     graphs = [
         {
             'data': [
                 Bar(
-                    x=genre_names,
-                    y=genre_counts
+                    x=list(df2.columns),
+                    y=sample_counts
                 )
             ],
 
             'layout': {
-                'title': 'Distribution of Message Genres',
+                'title': 'Fig. 1: Number of positive samples per category (total messages: '+str(all_counts)+')',
                 'yaxis': {
                     'title': "Count"
                 },
                 'xaxis': {
-                    'title': "Genre"
+                    'title': "Message Category",
+                    'tickangle': 45,
+                    'automargin': True
                 }
             }
+        },
+        {
+          "data": [
+                Heatmap(
+                   z=pd.DataFrame(df3).T.values.tolist(),
+                   x=df2.columns,
+                   y=df2.columns,
+                   hoverongaps = False)
+          ],
+          'layout': {
+            'title': "Fig. 2: Number count of category Y over all samples of training set with category X  = 0",
+            'autosize': True,
+            'width': 1000,
+            'height': 1000,
+            'xaxis': {
+                'title': "Category X",
+                'tickangle': 45,
+                'automargin': True
+            },
+            'yaxis': {
+                'title': "Category Y",
+                'tickangle': 45,
+                'automargin': True
+            },
+            }
         }
+
     ]
 
     # encode plotly graphs in JSON
@@ -129,6 +123,10 @@ def go():
 
     # use model to predict classification for query
     classification_labels = model.predict([query])[0]
+    print(classification_labels)
+    # print(type(model.predict([query])))
+    # print("dfghjkl")
+    # print((model.predict([query])).shape)
     classification_results = dict(zip(df.columns[4:], classification_labels))
 
     # This will render the go.html Please see that file.

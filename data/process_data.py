@@ -5,8 +5,8 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
-    messages =pd.read_csv(messages_filepath)
-    categories = pd.read_csv(categories_filepath)
+    messages =pd.read_csv(messages_filepath,encoding='utf-8')
+    categories = pd.read_csv(categories_filepath,encoding='utf-8')
 
     return pd.merge(messages,categories,"inner",on="id")
 
