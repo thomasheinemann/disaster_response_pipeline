@@ -28,14 +28,16 @@ class text2vec(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
 
-        documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(X)]
+        #documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(X)]
+        documents = [TaggedDocument(''.join(tokenize(doc)), [i]) for i, doc in enumerate(X)]
         #print(documents)
-        self.model = Doc2Vec(documents, vector_size=5, window=2, min_count=1, workers=4)
+        self.model = Doc2Vec(documents, vector_size=2, window=10, min_count=1, workers=4)
 
         #vector = model.infer_vector(sent_tokenize('das ist sehr gut.'))
         return self
     def bla(self,X):
-        return self.model.infer_vector(sent_tokenize(X))
+        #return self.model.infer_vector(sent_tokenize(X))
+        return self.model.infer_vector(sent_tokenize(''.join(tokenize(X))))
 
     def transform(self, X):
         #X_tagged = pd.Series(X).apply(self.starting_verb)

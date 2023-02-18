@@ -45,7 +45,7 @@ nltk.download('wordnet')
 #libraries for transformations
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+#from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
 #scrambling
 
@@ -54,90 +54,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MaxAbsScaler
 from sklearn.naive_bayes import CategoricalNB
 
-
-
-import scipy.sparse
-
-
-class scaleri(TransformerMixin):#(BaseEstimator, TransformerMixin):
-    def __init__(self):
-        pass
-    def fit_transform(self,X, y=None):
-        print("fit_transform")
-        self.fit(X,y)
-        P=self.transform(X)
-        return P
-
-    def fit(self, X, y=None):
-        print("fit")
-        return self
-
-    def infer(self,X):
-
-        # me=0
-        # for i in range(X.shape[0]):
-        #     me=me+X.iloc[i,:].mean()
-        # print(me)
-        # me=(me/X.shape[0])
-        # for i in range(X.shape[0]):
-        #     for j in range(X.shape[1]):
-        #         X.iloc[i,j]=X.iloc[i,j]-me
-        print("fg ", X, "   kl")
-        return X
-
-    def transform(self, X):   #for test data
-        #print("rtzu", X,    "   jk")
-        #X2=pd.DataFrame(X.toarray())
-        #X=X2
-        #print(((X-X.mean(1)).shape))
-        #X.mean()
-        #return 2*X #self.infer(X)
-        # print(type(X))
-        # print(X.shape)
-        # print(type(X.mean(1)))
-        # print(X.mean(1).shape)
-        # print(type(X-X.mean(1)))
-        # print((X-X.mean(1)).shape)
-        # print(X[0])
-        # print((X-X.mean(1))[0])
-        # print(type(scipy.sparse.csr_matrix(X-X.mean(1))))
-        #print((X-scipy.sparse.bsr_array(X.mean(1)))[0])
-        #quit()
-        print("transform")
-
-        return X.toarray()-X.mean() #pd.Series(X).apply(self.infer).apply(pd.Series)
-
-
-#####################################################
-from gensim.test.utils import datapath
-from gensim import utils
-
-class MyCorpus:
-
-    """An iterator that yields sentences (lists of str)."""
-
-    def __iter__(self):
-        corpus_path = datapath('lee_background.cor')
-        for line in open(corpus_path):
-            # assume there's one document per line, tokens separated by whitespace
-            yield utils.simple_preprocess(line)
-import gensim.models
-
-sentences = MyCorpus()
-model = gensim.models.Word2Vec(sentences=sentences)
-
-
-class w2v(TransformerMixin):
-    def __init__(self):
-        self.model=Doc2Vec()
-    def fit(self,X,y=None):
-        return self
-    def transform(self, X):
-
-
-
-
-#######################################################
 
 class text2vec(TransformerMixin):
     def __init__(self):
@@ -149,9 +65,9 @@ class text2vec(TransformerMixin):
         #documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(X)]
         documents = [TaggedDocument(tokenize(doc), [i]) for i, doc in enumerate(X)]
         #print(documents)
-        self.model = Doc2Vec(documents, vector_size=6, window=3, min_count=1, workers=8,epochs=20)
+        self.model = Doc2Vec(documents, vector_size=2000, window=200, min_count=20, workers=8)
         #self.model.build_vocab(docs)
-        print("fit text2vec")
+        #print("fghJ1")
         #vector = model.infer_vector(sent_tokenize('das ist sehr gut.'))
         return self
 
@@ -165,8 +81,9 @@ class text2vec(TransformerMixin):
         return v
 
     def transform(self, X):   #for test data
-        #print("transform text2vec",X)
+
         return pd.Series(X).apply(self.infer).apply(pd.Series)
+    #return self #model.infer_vector(sent_tokenize('das ist sehr gut.'))# pd.DataFrame(X_tagged)
 
 class multiclassifier(BaseEstimator, TransformerMixin):
     #model=MultiOutputClassifier(LogisticRegression())
@@ -191,8 +108,7 @@ class multiclassifier(BaseEstimator, TransformerMixin):
                 y.iloc[0,i]=0
             f1=(y.iloc[:,i].sum()/y.shape[0])
             f2=1.0-f1
-            #self.estimator.class_weight={0:f2,1:f1}
-            self.estimator.class_weight={0:1,1:1}
+            self.estimator.class_weight={0:f2,1:f1}
 
             self.model[i].fit(X,y.iloc[:,i]) #,sample_weight=sample_weight)#,classes=[np.array([0,1])])##,sample_weight=sample_weight)
         return self
@@ -260,15 +176,14 @@ def build_model():
 
 
     pipeline = Pipeline([
-        ('vect', text2vec()),
+        #('vect', text2vec()),
         #('scl',StandardScaler()),
         #('scale',MinMaxScaler()),
-        #('vect', CountVectorizer(tokenizer=tokenize)),
-        #('tfidf', TfidfTransformer()),
+        ('vect', CountVectorizer(tokenizer=tokenize)),
+        ('tfidf', TfidfTransformer()),
         #('scale',MinMaxScaler()),
-        #('scale',MaxAbsScaler()),
-        #('scale',scaleri()),
-        #('scl',StandardScaler(copy=False)),
+        ('scale',MaxAbsScaler()),
+        #('scl',StandardScaler(copy=False,with_mean=True)),
         #('clf',MultiOutputClassifier(estimator=SVC(random_state=0)))#,class_weight={0:1,1:1})))#class_weight)))
         ('clf',MultiOutputClassifier(estimator=SVC()))
         #('clf',multiclassifier(SVC()))#class_weight)))
@@ -345,7 +260,10 @@ def main():
         #quit()
         #print(Y.shape, category_names, type(category_names))
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
-
+        #print(len(Y_train)/Y_train.iloc[:,0].sum()-1)
+        #print(len(Y_train)-Y_train.iloc[:,0].sum(),len(Y_train),Y_train.iloc[:,0].sum())
+        #print([{0:1,1:len(Y_train)/Y_train.iloc[:,i].sum()-1} for i in range(0, len(Y_train.columns),1)])
+        #quit()
         #class_weight={"output"+str(i+1) : {0:1,1:len(Y_train)/(Y_train.iloc[:,i].sum()+0.1)-1} for i in range(0, len(Y_train.columns),1)}
         #print(class_weight)
         print('Building model...')
@@ -353,8 +271,9 @@ def main():
         #print(X_train.shape)
         #print(Y_train.shape)
         print('Training model...')
+
         model.fit(X_train, Y_train.iloc[:,0:8])
-        #quit()
+
 
 
         print('Evaluating model...')

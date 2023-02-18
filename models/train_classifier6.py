@@ -107,38 +107,6 @@ class scaleri(TransformerMixin):#(BaseEstimator, TransformerMixin):
 
         return X.toarray()-X.mean() #pd.Series(X).apply(self.infer).apply(pd.Series)
 
-
-#####################################################
-from gensim.test.utils import datapath
-from gensim import utils
-
-class MyCorpus:
-
-    """An iterator that yields sentences (lists of str)."""
-
-    def __iter__(self):
-        corpus_path = datapath('lee_background.cor')
-        for line in open(corpus_path):
-            # assume there's one document per line, tokens separated by whitespace
-            yield utils.simple_preprocess(line)
-import gensim.models
-
-sentences = MyCorpus()
-model = gensim.models.Word2Vec(sentences=sentences)
-
-
-class w2v(TransformerMixin):
-    def __init__(self):
-        self.model=Doc2Vec()
-    def fit(self,X,y=None):
-        return self
-    def transform(self, X):
-
-
-
-
-#######################################################
-
 class text2vec(TransformerMixin):
     def __init__(self):
         self.model=Doc2Vec()
@@ -149,7 +117,7 @@ class text2vec(TransformerMixin):
         #documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(X)]
         documents = [TaggedDocument(tokenize(doc), [i]) for i, doc in enumerate(X)]
         #print(documents)
-        self.model = Doc2Vec(documents, vector_size=6, window=3, min_count=1, workers=8,epochs=20)
+        self.model = Doc2Vec(documents, vector_size=3, window=3, min_count=20, workers=8,epochs=4)
         #self.model.build_vocab(docs)
         print("fit text2vec")
         #vector = model.infer_vector(sent_tokenize('das ist sehr gut.'))
@@ -165,7 +133,7 @@ class text2vec(TransformerMixin):
         return v
 
     def transform(self, X):   #for test data
-        #print("transform text2vec",X)
+        print("transform text2vec")
         return pd.Series(X).apply(self.infer).apply(pd.Series)
 
 class multiclassifier(BaseEstimator, TransformerMixin):
@@ -191,8 +159,7 @@ class multiclassifier(BaseEstimator, TransformerMixin):
                 y.iloc[0,i]=0
             f1=(y.iloc[:,i].sum()/y.shape[0])
             f2=1.0-f1
-            #self.estimator.class_weight={0:f2,1:f1}
-            self.estimator.class_weight={0:1,1:1}
+            self.estimator.class_weight={0:f2,1:f1}
 
             self.model[i].fit(X,y.iloc[:,i]) #,sample_weight=sample_weight)#,classes=[np.array([0,1])])##,sample_weight=sample_weight)
         return self
@@ -344,7 +311,7 @@ def main():
 
         #quit()
         #print(Y.shape, category_names, type(category_names))
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.96, random_state=0)
 
         #class_weight={"output"+str(i+1) : {0:1,1:len(Y_train)/(Y_train.iloc[:,i].sum()+0.1)-1} for i in range(0, len(Y_train.columns),1)}
         #print(class_weight)
@@ -354,7 +321,7 @@ def main():
         #print(Y_train.shape)
         print('Training model...')
         model.fit(X_train, Y_train.iloc[:,0:8])
-        #quit()
+        quit()
 
 
         print('Evaluating model...')
