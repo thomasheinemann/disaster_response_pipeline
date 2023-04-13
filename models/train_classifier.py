@@ -34,11 +34,40 @@ def load_data(database_filepath):
 
 
 #libraries for transformations
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import classification_report
 from sklearn.model_selection import GridSearchCV
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.preprocessing import MaxAbsScaler
+
+import nltk
+from sklearn.base import BaseEstimator,TransformerMixin
+class StartingVerbExtractor(BaseEstimator, TransformerMixin):
+
+    def starting_verb(self, text):
+        sentence_list = nltk.sent_tokenize(text)
+        for sentence in sentence_list:
+            pos_tags = nltk.pos_tag(tokenize(sentence))
+            if len(pos_tags)>0:
+                first_word, first_tag = pos_tags[0]
+                if first_tag in ['VB', 'VBP'] or first_word == 'RT':
+                    return True
+        return False
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        X_tagged = pd.Series(X).apply(self.starting_verb)
+        return pd.DataFrame(X_tagged)
+
+# class named_entity_recognition(BaseEstimator, TransformerMixin):
+#
+# tree = nltk.ne_chunk(nltk.pos_tag(tokenize(text)))
+
+
+
+
 
 #sparse arrays
 import scipy.sparse
@@ -58,46 +87,66 @@ def build_model():
        The best paramters were determined using grid search.
     """
 
-    pipeline = Pipeline([
-        ('countvec', CountVectorizer(tokenizer=tokenize)),
-        ('word2vec', w2v()),
-        ('tfidf', TfidfTransformer()),
-        ('norm', MaxAbsScaler()),
-        ('clf',MultiOutputClassifier(estimator=LogisticRegression(),n_jobs=-1))# hiermit klappt countvectorizer und word2vec mit [0]
-        # ('clf',multiclassifier()) #hiermit klappt countvectorizer und word2vec analog mit [0]
+    # pipeline_classic = Pipeline([
+    #
+    #     ('features', FeatureUnion([
+    #
+    #         ('pipeline0', Pipeline([
+    #             ('countvec', CountVectorizer(tokenizer=tokenize)),
+    #             ('tfidf', TfidfTransformer()),
+    #             ('norm', MaxAbsScaler())
+    #         ])),
+    #
+    #         ('starting_verb', StartingVerbExtractor())
+    #
+    #     ])),
+    #
+    #     ('clf',MultiOutputClassifier(estimator=adjusted_classifier(),n_jobs=-1))
+    # ])
+    # parameters_classic = [{
+    # 'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.05,1,1)])
+    # }]
+    # cv = GridSearchCV(pipeline_classic,param_grid=parameters_classic)# , scoring='precision')
+    pipeline_advanced = Pipeline([
+
+        ('features', FeatureUnion([
+
+            ('pipeline1', Pipeline([
+                ('word2vec', w2v()),
+                ('tfidf', TfidfTransformer()),
+                ('norm', MaxAbsScaler())
+            ])),
+
+            # ('pipeline2', Pipeline([
+            #     ('word2vec', w2v()),
+            #     ('tfidf', TfidfTransformer()),
+            #     ('norm', MaxAbsScaler())
+            # ])),
+
+            ('starting_verb', StartingVerbExtractor())
+
+        ])),
+
+        ('clf',MultiOutputClassifier(estimator=adjusted_classifier(),n_jobs=-1))
     ])
 
-    parameters = [{
-    # MultiOutputClassifier
-    # 'word2vec': ['passthrough'],
-    # 'clf__estimator' : ([LogisticRegression()])
-    # }
-    # # MultiOutputClassifier
-    # 'countvec': ['passthrough'],
-    # 'word2vec__resolution': ([[60]]), #,[9,9,8,8],[7,7,7,7]]),#([[8,8,8,8],[9,8,8,8],[6,6,6,6,6]]),
-    # 'word2vec__window' : ([20]),
-    # 'word2vec__min_count' : ([1]),
-    # 'word2vec__epochs' : ([50]),
-    # }
-    # 'word2vec': ['passthrough'],
-    # 'clf__estimator' : ([LogisticRegression]),
-    # 'clf__sample_weight_coefficient' : ([0.25]),
-    # 'clf__sample_weight_threshold' : ([0.01]),
-    # 'clf__C_param1' : ([1]),
-    # 'clf__C_param2' : ([1])
-    # }
-    'countvec': ['passthrough'],
-    'word2vec__resolution': ([[450,100],[45000]]),
-    'word2vec__window' : ([20]),
-    'word2vec__min_count' : ([1]),
-    'word2vec__epochs' : ([50]),
-    'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.1,1000,1000)])
+    parameters_advanced = [{
+    'features__pipeline1__word2vec__resolution': ([[10,10,10]]),
+    'features__pipeline1__word2vec__window' : ([20]),
+    'features__pipeline1__word2vec__min_count' : ([1]),
+    'features__pipeline1__word2vec__epochs' : ([50]),
+    # 'features__pipeline2__word2vec__resolution': ([[90000]]),
+    # 'features__pipeline2__word2vec__window' : ([20]),
+    # 'features__pipeline2__word2vec__min_count' : ([1]),
+    # 'features__pipeline2__word2vec__epochs' : ([50]),
+    'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.05,1,10)])
     }
     ]
 
 
-    cv = GridSearchCV(pipeline,param_grid=parameters, scoring='f1_macro')
-    # cv = pipeline
+
+    cv = GridSearchCV(pipeline_advanced,param_grid=parameters_advanced)#,refit=True, scoring='accuracy')
+
     return cv
 
 

@@ -40,6 +40,7 @@ class adjusted_classifier(BaseEstimator):
         return self
     def score(self,X,y):
         """scoring function being an average value over all target accuracies"""
+        print("score")
         return self.model.score(X,y)
 
     def fit(self, X, y=None):
@@ -61,7 +62,7 @@ class adjusted_classifier(BaseEstimator):
 
 
         if f1>self.sample_weight_threshold and 1.0-f1>self.sample_weight_threshold:
-            self.model=OneVsRestClassifier(self.estimator(random_state=0,C=self.C_param1,max_iter=5000))# ,class_weight='balanced'))
+            self.model=OneVsRestClassifier(self.estimator(random_state=0,C=self.C_param1,max_iter=5000 ,class_weight='balanced'))
             # self.model2=self.estimator(random_state=0,C=self.C_param1,max_iter=5000,class_weight='balanced')
             # self.model[i]=self.estimator(random_state=0,C=1000)
             # self.model[i]=self.estimator(C=1000)
@@ -95,7 +96,7 @@ class adjusted_classifier(BaseEstimator):
         #
         # return self
     def predict(self,X):
-        """predict funtion being a comnanated list for predictions of each target value"""
+        """predict funtion for the only one target value"""
         if self.one_class_only:
             return [self.one_class_value for i in range(X.shape[0])]
         y_pred=self.model.predict(X)
