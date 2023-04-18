@@ -61,9 +61,6 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
         X_tagged = pd.Series(X).apply(self.starting_verb)
         return pd.DataFrame(X_tagged)
 
-# class named_entity_recognition(BaseEstimator, TransformerMixin):
-#
-# tree = nltk.ne_chunk(nltk.pos_tag(tokenize(text)))
 
 
 
@@ -86,6 +83,24 @@ def build_model():
     """Definition of the model via pipeline and a parameters variable.
        The best paramters were determined using grid search.
     """
+    # pipeline_classic = Pipeline([
+    #
+    #     ('features', FeatureUnion([
+    #
+    #         ('pipeline0', Pipeline([
+    #             ('countvec', CountVectorizer(tokenizer=tokenize)),
+    #             ('tfidf', TfidfTransformer()),
+    #             ('norm', MaxAbsScaler())
+    #         ]))
+    #
+    #     ])),
+    #
+    #     ('clf',MultiOutputClassifier(estimator=adjusted_classifier(),n_jobs=-1))
+    # ])
+    # parameters_classic = [{
+    # 'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.00,1,1),adjusted_classifier(LogisticRegression,0.005,1,1)])
+    # }]
+    # cv = GridSearchCV(pipeline_classic,param_grid=parameters_classic, scoring='f1_macro')
 
     # pipeline_classic = Pipeline([
     #
@@ -104,9 +119,74 @@ def build_model():
     #     ('clf',MultiOutputClassifier(estimator=adjusted_classifier(),n_jobs=-1))
     # ])
     # parameters_classic = [{
-    # 'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.05,1,1)])
+    # 'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.00,1,1)])
     # }]
     # cv = GridSearchCV(pipeline_classic,param_grid=parameters_classic)# , scoring='precision')
+
+    # pipeline_mixed = Pipeline([
+    #
+    #     ('features', FeatureUnion([
+    #
+    #         ('pipeline0', Pipeline([
+    #             ('countvec', CountVectorizer(tokenizer=tokenize)),
+    #             ('tfidf', TfidfTransformer()),
+    #             ('norm', MaxAbsScaler())
+    #         ])),
+    #
+    #         ('starting_verb', StartingVerbExtractor())
+    #
+    #     ])),
+    #
+    #     ('clf',MultiOutputClassifier(estimator=adjusted_classifier(),n_jobs=-1))
+    # ])
+    # parameters_mixed = [{
+    # 'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.00,1,1)])
+    # }]
+    # cv = GridSearchCV(pipeline_mixed,param_grid=parameters_mixed)# , scoring='precision')
+
+    # pipeline_advanced = Pipeline([
+    #
+    #     ('features', FeatureUnion([
+    #
+    #         ('pipeline1', Pipeline([
+    #             ('word2vec', w2v()),
+    #             ('tfidf', TfidfTransformer()),
+    #             ('norm', MaxAbsScaler())
+    #         ])),
+    #         #
+    #         # ('pipeline2', Pipeline([
+    #         #     ('word2vec', w2v()),
+    #         #     ('tfidf', TfidfTransformer()),
+    #         #     ('norm', MaxAbsScaler())
+    #         # ])),
+    #
+    #         ('starting_verb', StartingVerbExtractor())
+    #
+    #     ])),
+    #
+    #     ('clf',MultiOutputClassifier(estimator=adjusted_classifier(),n_jobs=-1))
+    # ])
+    #
+    # parameters_advanced = [{
+    # 'features__pipeline1__word2vec__resolution': ([[5,5,5,5,5,5,5,4],[5,5,5,5,5,5,5,2]]),
+    # 'features__pipeline1__word2vec__window' : ([20]),
+    # 'features__pipeline1__word2vec__min_count' : ([1]),
+    # 'features__pipeline1__word2vec__epochs' : ([50]),
+    # # 'features__pipeline2__word2vec__resolution': ([[165000]]),
+    # # 'features__pipeline2__word2vec__window' : ([20]),
+    # # 'features__pipeline2__word2vec__min_count' : ([1]),
+    # # 'features__pipeline2__word2vec__epochs' : ([50]),
+    # 'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.0,1,1)])
+    # #'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.05,1,10),adjusted_classifier(LogisticRegression,0.1,1,10),adjusted_classifier(LogisticRegression,0.02,1,10),adjusted_classifier(LogisticRegression,0.05,1,1),adjusted_classifier(LogisticRegression,0.05,0.1,1),adjusted_classifier(LogisticRegression,0.05,0.5,10)])
+    # }
+    # ]
+    #
+    #
+    #
+    # cv = GridSearchCV(pipeline_advanced,param_grid=parameters_advanced)#,refit=True, scoring='accuracy')
+
+
+
     pipeline_advanced = Pipeline([
 
         ('features', FeatureUnion([
@@ -117,12 +197,6 @@ def build_model():
                 ('norm', MaxAbsScaler())
             ])),
 
-            # ('pipeline2', Pipeline([
-            #     ('word2vec', w2v()),
-            #     ('tfidf', TfidfTransformer()),
-            #     ('norm', MaxAbsScaler())
-            # ])),
-
             ('starting_verb', StartingVerbExtractor())
 
         ])),
@@ -131,27 +205,27 @@ def build_model():
     ])
 
     parameters_advanced = [{
-    'features__pipeline1__word2vec__resolution': ([[10,10,10]]),
+    # 'features__pipeline1__word2vec__resolution': ([[5,5,5,5,5,5,5,3],[5,5,5,5,5,5,5,4],[5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,2]]),
+    # 'features__pipeline1__word2vec__resolution': ([[5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,6], [5,5,5,5,5,5,5,7],[5,5,5,5,5,5,5,8],[5,5,5,5,5,5,5,9],[5,5,5,5,5,5,5,10],[5,5,5,5,5,5,5,4]]),
+    # 'features__pipeline1__word2vec__resolution': ([[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],[5,5,5,5,5,5,5,8],[4,4,4,4,4,4,4,4,10]]),
+    # 'features__pipeline1__word2vec__resolution': ([[6,6,6,6,6,6,6,2]]),
+    'features__pipeline1__word2vec__resolution': ([[6]]),
+    # 'features__pipeline1__word2vec__resolution': ([[6,6,6,6,6,6,6,2],[6,6,6,6,6,6,6,3],[5,5,5,5,5,5,5,8],[5,5,5,5,5,6,6,6],[5,5,5,5,6,6,6,6]]),
     'features__pipeline1__word2vec__window' : ([20]),
     'features__pipeline1__word2vec__min_count' : ([1]),
     'features__pipeline1__word2vec__epochs' : ([50]),
-    # 'features__pipeline2__word2vec__resolution': ([[90000]]),
-    # 'features__pipeline2__word2vec__window' : ([20]),
-    # 'features__pipeline2__word2vec__min_count' : ([1]),
-    # 'features__pipeline2__word2vec__epochs' : ([50]),
-    'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.05,1,10)])
+    'clf__estimator' : ([adjusted_classifier(LogisticRegression,1)])
     }
     ]
 
 
 
-    cv = GridSearchCV(pipeline_advanced,param_grid=parameters_advanced)#,refit=True, scoring='accuracy')
-
+    cv = GridSearchCV(pipeline_advanced,param_grid=parameters_advanced,refit=True, scoring='f1_macro')
     return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    """model is evaluated with respect to precision"""
+    """model is evaluated"""
 
     print("Evaluate categorical data from test set")
     y_pred=pd.DataFrame(model.predict(X_test)).T.values.tolist()
@@ -197,7 +271,11 @@ def main():
         print(model.score(X_test[Y_test.iloc[:,0]==1],Y_test[Y_test.iloc[:,0]==1].iloc[:,0:9]))
         print(model.cv_results_['params'])
         evaluate_model(model, X_test[Y_test.iloc[:,0]==1],Y_test[Y_test.iloc[:,0]==1].iloc[:,0:9], category_names[0:9])
-
+        # model.fit(X_train[Y_train['related']==1],Y_train[Y_train['related']=1].iloc[:,0:9])
+        # print('Evaluating model...')
+        # print(model.score(X_test[Y_test['related']==1],Y_test[Y_test['related']==1].iloc[:,0:9]))
+        # print(model.cv_results_['params'])
+        # evaluate_model(model, X_test[Y_test['related']==1],Y_test[Y_test['related']==1].iloc[:,0:9], category_names[0:9])
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
 

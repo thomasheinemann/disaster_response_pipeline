@@ -96,7 +96,7 @@ class w2v(TransformerMixin):
             min and max values are saved in object vectors xmax and xmin
             output: None
         """
-        # set min and max value
+        # set min and max value for the first grap-able word
         find=False
         for message in messages:
             for word in message:
