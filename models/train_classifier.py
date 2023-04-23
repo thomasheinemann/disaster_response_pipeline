@@ -1,292 +1,208 @@
-# import libraries
+# common libraries
 import sys
 import pandas as pd
+import numpy as np
+from datetime import datetime
+import pprint
 
+# library for handling sparse arrays
+import scipy.sparse
+
+# library for DB server
 from sqlalchemy import create_engine
 
-#libraries for pickling
-import io
+# libraries for pickling
 try:
     import joblib
 except:
     from sklearn.externals import joblib
 
-
-import numpy as np
-
-from transformer_module import tokenize, w2v
-from adjusted_classifier import adjusted_classifier
+# train test split library
 from sklearn.model_selection import train_test_split
 
+# transformer libraries
+from transformer_module import w2v
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.preprocessing import StandardScaler
+
+# classifier libraries
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.linear_model import LogisticRegression
+from classifier_module import  adjusted_classifier, starting_verb_extractor
+
+# ML pipeline libraries
+from sklearn.pipeline import Pipeline, FeatureUnion
+
+# hyperparameter search library
+from sklearn.model_selection import GridSearchCV
+
+# scoring libraries
+from sklearn.metrics import make_scorer, f1_score, classification_report
+
+
+def date_diff_in_seconds(dt2, dt1):  # from https://www.w3resource.com/python-exercises/date-time-exercise/python-date-time-exercise-37.php
+    """Calculates difference in seconds between two "datetime" objects"""
+    timedelta = dt2 - dt1
+    return timedelta.days * 24 * 3600 + timedelta.seconds
+
+def dhms_from_seconds(seconds):  # from https://www.w3resource.com/python-exercises/date-time-exercise/python-date-time-exercise-37.php
+    """transforms seconds into dhms format"""
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    return (days, hours, minutes, seconds)
 
 def load_data(database_filepath):
     # load data from database
-    engine = create_engine("sqlite:///"+database_filepath)
-    df = pd.read_sql_table('mytable', con=engine)
-    df=df[[df.message[i] is not None for i in range(0, len(df))]]
+    engine = create_engine("sqlite:///" + database_filepath)
+    df = pd.read_sql_table("mytable", con=engine)
+    df = df[[df.message[i] is not None for i in range(0, len(df))]]
     X = df.message.iloc[:]
-    Y = df.iloc[:,4:]
+    Y = df.iloc[:, 4:]
 
-    return X,Y, Y.columns
-#####################################################
+    return X, Y, Y.columns
 
-
-
-
-#libraries for transformations
-from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.metrics import classification_report
-from sklearn.model_selection import GridSearchCV
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.preprocessing import MaxAbsScaler
-
-import nltk
-from sklearn.base import BaseEstimator,TransformerMixin
-class StartingVerbExtractor(BaseEstimator, TransformerMixin):
-
-    def starting_verb(self, text):
-        sentence_list = nltk.sent_tokenize(text)
-        for sentence in sentence_list:
-            pos_tags = nltk.pos_tag(tokenize(sentence))
-            if len(pos_tags)>0:
-                first_word, first_tag = pos_tags[0]
-                if first_tag in ['VB', 'VBP'] or first_word == 'RT':
-                    return True
-        return False
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        X_tagged = pd.Series(X).apply(self.starting_verb)
-        return pd.DataFrame(X_tagged)
-
-
-
-
-
-
-#sparse arrays
-import scipy.sparse
-
-#classifier
-from sklearn.multioutput import MultiOutputClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.svm import SVC
 
 def build_model():
-
     """Definition of the model via pipeline and a parameters variable.
-       The best paramters were determined using grid search.
+    The best parameters were determined using grid search.
     """
-    # pipeline_classic = Pipeline([
-    #
-    #     ('features', FeatureUnion([
-    #
-    #         ('pipeline0', Pipeline([
-    #             ('countvec', CountVectorizer(tokenizer=tokenize)),
-    #             ('tfidf', TfidfTransformer()),
-    #             ('norm', MaxAbsScaler())
-    #         ]))
-    #
-    #     ])),
-    #
-    #     ('clf',MultiOutputClassifier(estimator=adjusted_classifier(),n_jobs=-1))
-    # ])
-    # parameters_classic = [{
-    # 'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.00,1,1),adjusted_classifier(LogisticRegression,0.005,1,1)])
-    # }]
-    # cv = GridSearchCV(pipeline_classic,param_grid=parameters_classic, scoring='f1_macro')
 
-    # pipeline_classic = Pipeline([
-    #
-    #     ('features', FeatureUnion([
-    #
-    #         ('pipeline0', Pipeline([
-    #             ('countvec', CountVectorizer(tokenizer=tokenize)),
-    #             ('tfidf', TfidfTransformer()),
-    #             ('norm', MaxAbsScaler())
-    #         ])),
-    #
-    #         ('starting_verb', StartingVerbExtractor())
-    #
-    #     ])),
-    #
-    #     ('clf',MultiOutputClassifier(estimator=adjusted_classifier(),n_jobs=-1))
-    # ])
-    # parameters_classic = [{
-    # 'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.00,1,1)])
-    # }]
-    # cv = GridSearchCV(pipeline_classic,param_grid=parameters_classic)# , scoring='precision')
+    pipeline = Pipeline(
+        [
+            (
+                "features",
+                FeatureUnion(
+                    [
+                        (
+                            "pipeline1",
+                            Pipeline(
+                                [
+                                    ("countvec", CountVectorizer()),# tokenizer=word_tokenize)),
+                                    ("word2vec", w2v()),
+                                    ("tfidf", TfidfTransformer()),
+                                    ("scaler", StandardScaler(with_mean=False)),
+                                ]
+                            ),
+                        ),
+                        ("starting_verb", starting_verb_extractor()),
+                    ]
+                ),
+            ),
+            ("clf", MultiOutputClassifier(estimator=adjusted_classifier(), n_jobs=-1)),
+        ]
+    )
 
-    # pipeline_mixed = Pipeline([
-    #
-    #     ('features', FeatureUnion([
-    #
-    #         ('pipeline0', Pipeline([
-    #             ('countvec', CountVectorizer(tokenizer=tokenize)),
-    #             ('tfidf', TfidfTransformer()),
-    #             ('norm', MaxAbsScaler())
-    #         ])),
-    #
-    #         ('starting_verb', StartingVerbExtractor())
-    #
-    #     ])),
-    #
-    #     ('clf',MultiOutputClassifier(estimator=adjusted_classifier(),n_jobs=-1))
-    # ])
-    # parameters_mixed = [{
-    # 'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.00,1,1)])
-    # }]
-    # cv = GridSearchCV(pipeline_mixed,param_grid=parameters_mixed)# , scoring='precision')
-
-    # pipeline_advanced = Pipeline([
-    #
-    #     ('features', FeatureUnion([
-    #
-    #         ('pipeline1', Pipeline([
-    #             ('word2vec', w2v()),
-    #             ('tfidf', TfidfTransformer()),
-    #             ('norm', MaxAbsScaler())
-    #         ])),
-    #         #
-    #         # ('pipeline2', Pipeline([
-    #         #     ('word2vec', w2v()),
-    #         #     ('tfidf', TfidfTransformer()),
-    #         #     ('norm', MaxAbsScaler())
-    #         # ])),
-    #
-    #         ('starting_verb', StartingVerbExtractor())
-    #
-    #     ])),
-    #
-    #     ('clf',MultiOutputClassifier(estimator=adjusted_classifier(),n_jobs=-1))
-    # ])
-    #
-    # parameters_advanced = [{
-    # 'features__pipeline1__word2vec__resolution': ([[5,5,5,5,5,5,5,4],[5,5,5,5,5,5,5,2]]),
-    # 'features__pipeline1__word2vec__window' : ([20]),
-    # 'features__pipeline1__word2vec__min_count' : ([1]),
-    # 'features__pipeline1__word2vec__epochs' : ([50]),
-    # # 'features__pipeline2__word2vec__resolution': ([[165000]]),
-    # # 'features__pipeline2__word2vec__window' : ([20]),
-    # # 'features__pipeline2__word2vec__min_count' : ([1]),
-    # # 'features__pipeline2__word2vec__epochs' : ([50]),
-    # 'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.0,1,1)])
-    # #'clf__estimator' : ([adjusted_classifier(LogisticRegression,0.05,1,10),adjusted_classifier(LogisticRegression,0.1,1,10),adjusted_classifier(LogisticRegression,0.02,1,10),adjusted_classifier(LogisticRegression,0.05,1,1),adjusted_classifier(LogisticRegression,0.05,0.1,1),adjusted_classifier(LogisticRegression,0.05,0.5,10)])
-    # }
-    # ]
-    #
-    #
-    #
-    # cv = GridSearchCV(pipeline_advanced,param_grid=parameters_advanced)#,refit=True, scoring='accuracy')
-
-
-
-    pipeline_advanced = Pipeline([
-
-        ('features', FeatureUnion([
-
-            ('pipeline1', Pipeline([
-                ('word2vec', w2v()),
-                ('tfidf', TfidfTransformer()),
-                ('norm', MaxAbsScaler())
-            ])),
-
-            ('starting_verb', StartingVerbExtractor())
-
-        ])),
-
-        ('clf',MultiOutputClassifier(estimator=adjusted_classifier(),n_jobs=-1))
-    ])
-
-    parameters_advanced = [{
-    # 'features__pipeline1__word2vec__resolution': ([[5,5,5,5,5,5,5,3],[5,5,5,5,5,5,5,4],[5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,2]]),
-    # 'features__pipeline1__word2vec__resolution': ([[5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,6], [5,5,5,5,5,5,5,7],[5,5,5,5,5,5,5,8],[5,5,5,5,5,5,5,9],[5,5,5,5,5,5,5,10],[5,5,5,5,5,5,5,4]]),
-    # 'features__pipeline1__word2vec__resolution': ([[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],[5,5,5,5,5,5,5,8],[4,4,4,4,4,4,4,4,10]]),
-    # 'features__pipeline1__word2vec__resolution': ([[6,6,6,6,6,6,6,2]]),
-    'features__pipeline1__word2vec__resolution': ([[6]]),
-    # 'features__pipeline1__word2vec__resolution': ([[6,6,6,6,6,6,6,2],[6,6,6,6,6,6,6,3],[5,5,5,5,5,5,5,8],[5,5,5,5,5,6,6,6],[5,5,5,5,6,6,6,6]]),
-    'features__pipeline1__word2vec__window' : ([20]),
-    'features__pipeline1__word2vec__min_count' : ([1]),
-    'features__pipeline1__word2vec__epochs' : ([50]),
-    'clf__estimator' : ([adjusted_classifier(LogisticRegression,1)])
-    }
+    parameters = [
+        {
+            "features__pipeline1__countvec": ['passthrough'],
+            "features__pipeline1__word2vec__resolution": ([[5]]), #([[5,5,5,5,5,6,6,6]]), # ([[5,5,5,5,5,6,6,6],[5,5,5,5,5,5,5,8]]),
+            "features__pipeline1__word2vec__window": ([20]),
+            "features__pipeline1__word2vec__min_count": ([1]),
+            "features__pipeline1__word2vec__epochs": ([50]),
+            "clf__estimator": ([adjusted_classifier(LogisticRegression, 1)])
+        },
+        {
+            "features__pipeline1__word2vec": ['passthrough'],
+            "clf__estimator": ([adjusted_classifier(LogisticRegression, 1)])
+        }
     ]
 
-
-
-    cv = GridSearchCV(pipeline_advanced,param_grid=parameters_advanced,refit=True, scoring='f1_macro')
+    cv = GridSearchCV(
+        pipeline,
+        param_grid=parameters,
+        refit=True,
+        scoring=make_scorer(f1_score,**dict(average='macro', pos_label=1,zero_division=0))
+    )
     return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
     """model is evaluated"""
-
-    print("Evaluate categorical data from test set")
-    y_pred=pd.DataFrame(model.predict(X_test)).T.values.tolist()
-    print(Y_test.shape)
+    print("\nTarget-averaged f1-score for class=1:\n    ",
+        model.score(
+            # X_test[Y_test["related"] == 1],
+            # Y_test[Y_test["related"] == 1].iloc[:, 0:],
+            X_test,
+            Y_test,
+        )
+    )
+    print("\nEvaluate categorical data from test set")
+    y_pred = pd.DataFrame(model.predict(X_test)).T.values.tolist()
     print("\n")
-    print("Evaluate Categorical estimator:")
+    print("Evaluate Categorical estimator for each tagret variable:")
     print("\n")
-
-    print(model.best_params_)
     for i in range(len(category_names)):
+        print("-----------------------------------------------------")
         print(category_names[i])
-        print(classification_report(Y_test.iloc[:,i],y_pred[i],zero_division=1))
+        print(classification_report(Y_test.iloc[:, i], y_pred[i], zero_division=0))
 
-#
+
 
 def save_model(model, model_filepath):
     """model is pickled into a file"""
 
-    outfile = open(model_filepath,'wb')
-    joblib.dump(model,outfile,compress=7)
+    outfile = open(model_filepath, "wb")
+    joblib.dump(model, outfile, compress=7)
     outfile.close()
 
 
 def main():
     if len(sys.argv) == 3:
+
+        time1 = datetime.now()
+
         database_filepath, model_filepath = sys.argv[1:]
-        print('Loading data...\n    DATABASE: {}'.format(database_filepath))
-        X2, Y2, category_names = load_data(database_filepath)
-        X=X2[0:]
-        Y=Y2.iloc[0:,0:9]
+        print("Loading data...\n    DATABASE: {}".format(database_filepath))
+        X, Y, category_names = load_data(database_filepath)
 
-        category_names=Y.columns
+        category_names = Y.columns
+        X_train, X_test, Y_train, Y_test = train_test_split(
+            X, Y, test_size=0.95, random_state=0
+        )
 
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
-
-
-        print('Building model...')
+        print("\nBuilding model...")
         model = build_model()
 
-        print('Training model...')
-        model.fit(X_train[Y_train.iloc[:,0]==1],Y_train[Y_train.iloc[:,0]==1].iloc[:,0:9])
-        print('Evaluating model...')
-        print(model.score(X_test[Y_test.iloc[:,0]==1],Y_test[Y_test.iloc[:,0]==1].iloc[:,0:9]))
-        print(model.cv_results_['params'])
-        evaluate_model(model, X_test[Y_test.iloc[:,0]==1],Y_test[Y_test.iloc[:,0]==1].iloc[:,0:9], category_names[0:9])
-        # model.fit(X_train[Y_train['related']==1],Y_train[Y_train['related']=1].iloc[:,0:9])
-        # print('Evaluating model...')
-        # print(model.score(X_test[Y_test['related']==1],Y_test[Y_test['related']==1].iloc[:,0:9]))
-        # print(model.cv_results_['params'])
-        # evaluate_model(model, X_test[Y_test['related']==1],Y_test[Y_test['related']==1].iloc[:,0:9], category_names[0:9])
-        print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        save_model(model, model_filepath)
+        print("\nTraining model...")
+        model.fit(
+            X_train[Y_train["related"] == 1],
+            Y_train[Y_train["related"] == 1].iloc[:, 0:],
+        )
+        print("\nRuntime for building and training the model:")
+        time2 = datetime.now()
+        print("    %d days, %d hours, %d minutes, %d seconds" % dhms_from_seconds(date_diff_in_seconds(time2, time1)))
 
-        print('Trained model saved!')
+
+        print("\nEvaluating model...")
+
+        print("\nCross validation results:")
+        pprint.PrettyPrinter(indent=4).pprint(model.cv_results_)
+
+        print("\nParameters of best estimator:")
+        pprint.PrettyPrinter(indent=4).pprint(model.best_params_)
+
+        evaluate_model(
+            model,
+            X_test[Y_test["related"] == 1],
+            Y_test[Y_test["related"] == 1].iloc[:, 0:],
+            category_names[0:],
+        )
+
+        print("\nSaving model...\n    MODEL: {}".format(model_filepath))
+        save_model(model, model_filepath)
+        print("\nTrained model saved!")
+
 
     else:
-        print('Please provide the filepath of the disaster messages database '\
-              'as the first argument and the filepath of the pickle file to '\
-              'save the model to as the second argument. \n\nExample: python '\
-              'train_classifier.py ../data/DisasterResponse.db classifier.pkl')
+        print(
+            "Please provide the filepath of the disaster messages database "
+            "as the first argument and the filepath of the pickle file to "
+            "save the model to as the second argument. \n\nExample: python "
+            "train_classifier.py ../data/DisasterResponse.db classifier.pkl"
+        )
 
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
