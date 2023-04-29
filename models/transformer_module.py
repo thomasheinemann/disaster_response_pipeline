@@ -1,24 +1,26 @@
-# import libraries
+# basic libraries
 import sys
 import pandas as pd
-
-
 import numpy as np
 
-# Libraries for tokenization
-import re
-import nltk
+# libraries for tokenization
+import re # for regular expressions
+from nltk import download as dl
 from nltk.tokenize import sent_tokenize, word_tokenize
 
-nltk.download("punkt", quiet=True)
+dl("punkt", quiet=True)
 from nltk.stem import WordNetLemmatizer
-nltk.download("wordnet", quiet=True)
+dl("wordnet", quiet=True)
 from nltk.corpus import stopwords
-nltk.download("stopwords", quiet=True)
+dl("stopwords", quiet=True)
 
-
+# library for word2vec approach
 from gensim.models import Word2Vec
+
+# library for sparse data
 from scipy.sparse import csr_matrix, vstack
+
+# library for transformer base class
 from sklearn.base import TransformerMixin
 
 
@@ -65,7 +67,7 @@ class w2v(TransformerMixin):
         return self
 
     def fit(self, X, y=None):
-        """Fits model using message corpus X"""
+        """fits model using message corpus X"""
 
         messages = [
             tokenize(s) for message in X for s in sent_tokenize(message)
@@ -97,7 +99,7 @@ class w2v(TransformerMixin):
         self.bins = [
             np.linspace(self.xmin[i], self.xmax[i], self.resolution[i])
             for i in range(self.dimension)
-        ]  # build bins depending on the min max values
+        ]  # builds bins depending on the min max values
         return None
 
     def message2histogram(self, message):
@@ -107,17 +109,17 @@ class w2v(TransformerMixin):
 
         histogram0 = np.array(
             [0 for i in range(pd.Series(self.resolution).product())]
-        )  # build a 1-D histogram vector with zeros of the correct length
+        )  # builds a 1-D histogram vector with zeros of the correct length
         data = self.histogram(message, histogram0)
 
         return csr_matrix(data)
 
     def search_min_max_values_for_each_word2vec_dimension_in_corpus(self, messages):
-        """searches through each "word2vec" vector of the corpus and determines the min and max value in each dimension
+        """searches through each "word2vec" vector in the corpus and determines the min and max value in each dimension
         min and max values are saved in object vectors xmax and xmin
         output: None
         """
-        # set min and max value for the first grap-able word
+        # sets min and max value for the first grap-able word
         find = False
         for message in messages:
             for word in message:
@@ -146,12 +148,12 @@ class w2v(TransformerMixin):
 
     def histogram(self, message, histogram0):
         """determines histogram for a message
-        input text message
-        output: histogram vector
+        input: text message
+        output: histogram as vector of integers
         """
         histogram = histogram0
 
-        # calculate "basevec" which can map a vector onto a unique one-dimensional onehotencoded vector using a scalar product
+        # calculates "basevec" which can map a "word2vec" vector onto a unique one-dimensional onehotencoded vector using a scalar product
         @run_once
         def init_basevec():
             self.basevec = [1] * self.dimension
@@ -161,7 +163,7 @@ class w2v(TransformerMixin):
 
         init_basevec()
 
-        # calculate a 1-D histogram of a text message
+        # calculates a 1-D histogram representing each text message "message"
         for word in tokenize(message):
             try:
                 vec = self.model.wv[
@@ -175,8 +177,12 @@ class w2v(TransformerMixin):
                         )
                         for i in range(self.dimension)
                     ]
-                )  # discretize "word2vec" vector "vec"
+                )  # discretizes "word2vec" vector "vec"
+
+                # determines the index position of the "1" in a onehotencoded vector representation of "vec"
                 index_1d = np.dot(index_multi_dim, self.basevec)
+
+                # building the 1-D histogram
                 histogram[index_1d] = histogram[index_1d] + 1
             except:
                 pass
@@ -190,10 +196,10 @@ class w2v(TransformerMixin):
 def tokenize(text):
     """Replaces URLs with a placeholder and deletes non-specific words.
     Then tokenizes text.
-    output: Array-like word tokens of cleaned text
+    output: array-like word tokens of cleaned text
     """
 
-    # replace urls with "urlplaceholder"
+    # replaces urls with "urlplaceholder"
     url_regex = (
         "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
     )
@@ -201,7 +207,7 @@ def tokenize(text):
     for url in detected_urls:
         text = text.replace(url, "urlplaceholder")
 
-    # tokenize text in words and lemmatize each word; exclude stop words and "we", "the", "a", "an", "\""
+    # tokenizes text in words and lemmatizes each word; excludes stop words and  '"'
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
     stop_words = stopwords.words("english")

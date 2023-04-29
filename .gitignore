@@ -1,1 +1,9 @@
-*.pkl
+# pickle files holding the model
+# *.pkl
+
+# virtual environment
+venv
+
+
+# pycache
+__pycache__

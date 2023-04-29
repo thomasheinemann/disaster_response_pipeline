@@ -1,30 +1,34 @@
-import json
+# basic libaries
 import pandas as pd
+import sys
 
+# sql library
+from sqlalchemy import create_engine
 
+# flask library
 from flask import Flask
 from flask import render_template, request, jsonify
 
+# plotly, library for diagrams
 import plotly
 from plotly.graph_objs import Bar, Heatmap
 
-# libraries for pickling
-import io
+# json library to provide diagram configuration in json format
+import json
 
+# libraries for pickling
 try:
     import joblib
 except:
     from sklearn.externals import joblib
-from sqlalchemy import create_engine
+
+# own libraries
+sys.path.append("../models")
+from transformer_module import tokenize, w2v
+from classifier_module import adjusted_classifier
 
 
 ###########
-import sys
-
-sys.path.append("../models/")
-from transformer_module import tokenize, w2v
-from adjusted_classifier import adjusted_classifier
-
 app = Flask(__name__)
 
 
@@ -40,7 +44,7 @@ model = joblib.load("../models/classifier.pkl")
 @app.route("/")
 @app.route("/index")
 def index():
-
+    """provides flask index page with python graphics stuff"""
     # extract data needed for visuals
 
     df2 = df.iloc[:, 4:]
@@ -96,12 +100,12 @@ def index():
 # web page that handles user query and displays model results
 @app.route("/go")
 def go():
+    """provides flask 'go' page with python graphics stuff"""
     # save user input in query
     query = request.args.get("query", "")
 
     # use model to predict classification for query
     classification_labels = model.predict([query])[0]
-    print(classification_labels)
     classification_results = dict(zip(df.columns[4:], classification_labels))
 
     # This will render the go.html Please see that file.

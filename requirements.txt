@@ -1,0 +1,12 @@
+numpy
+pandas
+datetime
+scipy
+regex
+flask
+plotly
+joblib 
+sqlalchemy
+nltk
+gensim
+scikit-learn
