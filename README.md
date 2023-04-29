@@ -45,3 +45,6 @@ The difference in score is about 0.358 vs 0.345 for an 80-20 train-test-split.
 With respect to the training data, is worth-mentioning that one can recognize that text messages, for which a relation to categories was investigated, are categorized with "related=1".
 Non-investigated text messages are categorized with "0" throughout all target variables (including "related" - see Figure 2 in the web app).
 These non-investigated text messages were excluded from training and evaluating as one should not know from the text alone whether it was investigated or not.
+
+In the following, a graphical representation for a disaster message "I need medicine" is shown.
+![use_case_example](use_case_example.png)
