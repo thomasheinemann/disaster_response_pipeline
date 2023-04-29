@@ -1,7 +1,15 @@
 # Disaster Response Pipeline Project
 
 ### Instructions:
-0. Install the packages denoted in requirements.txt. A working configuration is saved in requirements_working_configuration.txt.
+0. Install the packages denoted in requirements_working_configuration.txt preferably in a virtual environment as exemplarily shown for windows command prompt:
+
+      projectfolder:> python -m venv venv
+      projectfolder:> cd venv\Scripts
+      projectfolder\venv\Scripts> .\activate.bat
+      projectfolder\venv\Scripts> cd ..\..
+      projectfolder:> python -m pip install -r requirements_working_configuration.txt
+
+      Within your projectfolder use the "python" command as long as the virtual environment is activated.
 
 1. Run the following commands in the project's root directory to set up your database and model.
 
