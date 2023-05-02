@@ -1,10 +1,19 @@
 # Disaster Response Pipeline Project
-![ambulance](fireworks_car.png)
-[comment]: <> (https://www.freepik.com/premium-vector/fire-truck-cartoon-clipart-colored-illustration_24434623.htm)
+<center><table><tr>
+<td>![ambulance](fireworks_car.png)
+[comment]: <> (https://www.freepik.com/premium-vector/fire-truck-cartoon-clipart-colored-illustration_24434623.htm)</td>
+<td>
 ![ambulance](police_car.png)
 [comment]: <> (https://de.freepik.com/vektoren-premium/polizeiauto-cartoon-clipart-farbige-illustration_24434932.htm)
+</td>
+<td>
 ![ambulance](ambulance_car.png)
 [comment]: <> (https://cobi.eu/product/barkas-b1000-krankenwagen,3403)
+</td>
+</tr></table>
+
+
+
 ### Summary
 
 This disaster response project is a GUI project triggered by the udacity "data-scientist-nanodegree" program (see https://www.udacity.com/).
