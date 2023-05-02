@@ -1,9 +1,9 @@
 # Disaster Response Pipeline Project
 
 ![cars](cars.png)
-[comment]: <> (https://www.freepik.com/premium-vector/fire-truck-cartoon-clipart-colored-illustration_24434623.htm)</td>
-[comment]: <> (https://de.freepik.com/vektoren-premium/polizeiauto-cartoon-clipart-farbige-illustration_24434932.htm)
-[comment]: <> (https://cobi.eu/product/barkas-b1000-krankenwagen,3403)
+[comment]: # (https://www.freepik.com/premium-vector/fire-truck-cartoon-clipart-colored-illustration_24434623.htm)</td>
+[comment]: # (https://de.freepik.com/vektoren-premium/polizeiauto-cartoon-clipart-farbige-illustration_24434932.htm)
+[comment]: # (https://cobi.eu/product/barkas-b1000-krankenwagen,3403)
 
 ### Summary
 
