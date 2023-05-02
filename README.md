@@ -1,9 +1,9 @@
 # Disaster Response Pipeline Project
 <center><table><tr>
-<td>![ambulance](fireworks_car.png)
+<td>![fireworks](fireworks_car.png)
 [comment]: <> (https://www.freepik.com/premium-vector/fire-truck-cartoon-clipart-colored-illustration_24434623.htm)</td>
 <td>
-![ambulance](police_car.png)
+![police](police_car.png)
 [comment]: <> (https://de.freepik.com/vektoren-premium/polizeiauto-cartoon-clipart-farbige-illustration_24434932.htm)
 </td>
 <td>
