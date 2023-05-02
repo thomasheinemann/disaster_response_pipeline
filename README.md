@@ -12,6 +12,11 @@
 </td>
 </tr></table>
 
+<center> Markdown Tutorial Teil 1 </center> | <center> Markdown Tutorial Teil 2 </center>
+--- | ---
+[![Tutorial 1](https://steemitimages.com/0x0/http://www.steppix.com/wp-content/uploads/2018/01/pexels-photo-262529.jpeg)](https://steemit.com/deutsch/@drtobi18/tobis-tutorial-3-and-128640-markdown-styling-guide-teil-1-ueberschriften-and-128640)
+|
+[![Tutorial 2](http://www.steppix.com/wp-content/uploads/2018/01/pexels-photo-669986-e1517076788561.jpeg)](https://steemit.com/deutsch/@drtobi18/tobis-tutorial-4-markdown-styling-guide-teil-2-textgestaltung)
 
 
 ### Summary
