@@ -1,7 +1,38 @@
 # Disaster Response Pipeline Project
+![ambulance](fireworks_car.png)
+[comment]: <> (https://www.freepik.com/premium-vector/fire-truck-cartoon-clipart-colored-illustration_24434623.htm)
+![ambulance](police_car.png)
+[comment]: <> (https://de.freepik.com/vektoren-premium/polizeiauto-cartoon-clipart-farbige-illustration_24434932.htm)
+![ambulance](ambulance_car.png)
+[comment]: <> (https://cobi.eu/product/barkas-b1000-krankenwagen,3403)
+### Summary
 
-### Instructions:
-0. Install the packages denoted in requirements_working_configuration.txt preferably in a virtual environment as exemplarily shown for windows command prompt:
+This disaster response project is a GUI project triggered by the udacity "data-scientist-nanodegree" program (see https://www.udacity.com/).
+Hereby, a user can enter a disaster text message into a textbox of a web application, which is then classified among 36 categories covering requests, medical help, etc.
+The positive results of these multioutput classification are shown by highlighting the corresponding categories.
+
+
+
+
+## Use case
+If an emergency message is entering an emergency service, their operator has to decide quickly what to do.
+The callers are often under shock or panicked - so no information should get lost.
+In such moments time is valueable and seconds may decide over life or death.
+A first help would be to understand the kind of emergency. Often it is even more than one.
+Such classification can support decision making by the operators and thus save valueable time.
+
+
+### Raw model
+
+This project is a simple raw model for a multiclass classification of text messages.
+Further possible applications include a tonality or topic analysis, a language or dialect analysis, or an analysis of diagnostic findings etc.
+This project also aims to produce a deployable web app.
+
+
+
+
+### Install/run instructions:
+0. Install the packages denoted in requirements_working_configuration.txt preferably in a virtual environment as exemplarily shown for the windows command prompt:
 
       projectfolder:> python -m venv venv
       projectfolder:> cd venv\Scripts
@@ -9,7 +40,8 @@
       projectfolder\venv\Scripts> cd ..\..
       projectfolder:> python -m pip install -r requirements_working_configuration.txt
 
-      Within your projectfolder use the "python" command as long as the virtual environment is activated.
+      Within your project folder "projectfolder" use the "python" command as long as the virtual environment is activated
+      (if not working with/on the project, the virtual environment should be deactivated by executing projectfolder\venv\Scripts\deactivate.bat).
 
 1. Run the following commands in the project's root directory to set up your database and model.
 
@@ -24,11 +56,35 @@
 
 3. Go to the displayed address - e.g., http://192.168.1.3:3001/
 
-### Explanations:
 
-This disaster response project is a GUI project triggered by the udacity "data-scientist-nanodegree" (see https://www.udacity.com/).
-Hereby, a user can enter a disaster text message into a textbox of a web application, which is then classified among 36 categories covering requests, medical help, etc.
-The positive results of these multioutput classification are shown by highlighting the corresponding categories.
+### Files in the repository
+
+app
+| - template
+| |- master.html # main page of web app
+| |- go.html # classification result page of web app
+|- run.py # Flask file that runs app
+data
+|- disaster_categories.csv # data to process
+|- disaster_messages.csv # data to process
+|- process_data.py
+|- InsertDatabaseName.db # database to save clean data to
+models
+|- transformer_module.py #
+|- train_classifier.py #
+|- classifier_module.py #
+|- classifier.pkl # saved model
+README.md
+requirements.txt # list of required packages
+requirements_working_configuration.txt # packages of working configuration used during development
+use_case_example.png # picture showing use case
+ml_pipeline_output_example.txt
+.gitignore
+
+
+### Technical explanations:
+
+
 The model is based on the "word to vector" (word2vec) model (https://github.com/RaRe-Technologies/gensim) in which contrary to the more simple bag of words approach, the embedding to nearby words is effectively taken into account.
 In the framework of this model each word is represented by a vector.
 The higher the dimensionality of these vectors, the more expressive are the euclidian distances between words for representing the meaning of each word.

@@ -25,10 +25,14 @@ def clean_data(df):
     #Convert category values to just numbers 0 or 1
     for column in categories:
         # set each value to be the last character of the string
-        categories[column] =list(map(lambda x:x[-1:],pd.Series(categories[column].astype(str)).values) )
+        categories[column] = list(map(lambda x:x[-1:],pd.Series(categories[column].astype(str)).values) )
 
         # convert column from string to numeric
         categories[column] = pd.Series(categories[column].astype(int)).values
+
+        # allow only 0 and 1; anything that is not 1 is assumed as 0.
+        categories[column] = list(map(lambda x:(1 if x==1 else 0),pd.Series(categories[column]).values) )
+
 
     # drop the original categories column from `df`
     df.drop(columns=['categories'],index=1, inplace=True)
@@ -46,7 +50,7 @@ def clean_data(df):
 def save_data(df, database_filename):
     """saves dataframe "df" as a database table "mytable" in the file "database_filename" """
     engine = create_engine("sqlite:///"+database_filename)
-    df.to_sql('mytable', engine, index=False)
+    df.to_sql('mytable', engine, index=False, if_exists='replace')
 
 
 def main():
