@@ -1,10 +1,12 @@
 # Disaster Response Pipeline Project
 
 ![cars](cars.png)
-[comment]: # (https://www.freepik.com/premium-vector/fire-truck-cartoon-clipart-colored-illustration_24434623.htm)</td>
-[comment]: # (https://de.freepik.com/vektoren-premium/polizeiauto-cartoon-clipart-farbige-illustration_24434932.htm)
-[comment]: # (https://cobi.eu/product/barkas-b1000-krankenwagen,3403)
-
+<!--
+Pictures taken from:
+* https://www.freepik.com/premium-vector/fire-truck-cartoon-clipart-colored-illustration_24434623.htm
+* https://de.freepik.com/vektoren-premium/polizeiauto-cartoon-clipart-farbige-illustration_24434932.htm
+* https://cobi.eu/product/barkas-b1000-krankenwagen,3403
+-->
 ### Summary
 
 This disaster response project is a GUI project triggered by the udacity "data-scientist-nanodegree" program (see https://www.udacity.com/).
@@ -14,7 +16,7 @@ The positive results of these multioutput classification are shown by highlighti
 
 
 
-## Use case
+### Use case
 If an emergency message is entering an emergency service, their operator has to decide quickly what to do.
 The callers are often under shock or panicked - so no information should get lost.
 In such moments time is valueable and seconds may decide over life or death.
@@ -58,7 +60,7 @@ This project also aims to produce a deployable web app.
 
 
 ### Files in the repository
-
+```
 app
 | - template
 | |- master.html # main page of web app
@@ -80,7 +82,7 @@ requirements_working_configuration.txt # packages of working configuration used 
 use_case_example.png # picture showing use case
 ml_pipeline_output_example.txt
 .gitignore
-
+```
 
 ### Technical explanations:
 
