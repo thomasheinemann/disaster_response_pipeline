@@ -89,7 +89,7 @@ use_case_example.png                   # typical use case picture
 .gitignore
 ```
 
-### Technical explanations:
+### Technical explanations
 
 
 The model is based on the "word to vector" (word2vec) model (https://github.com/RaRe-Technologies/gensim) in which contrary to the more simple bag of words approach, the embedding to nearby words is effectively taken into account.
