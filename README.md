@@ -9,39 +9,42 @@ Pictures taken from:
 -->
 ### Summary
 
-This disaster response project is a GUI project triggered by the udacity "data-scientist-nanodegree" program (see https://www.udacity.com/).
-Hereby, a user can enter a disaster text message into a textbox of a web application, which is then classified among 36 categories covering requests, medical help, etc.
+This disaster response project is a web app and triggered by the udacity "data-scientist-nanodegree" program (see https://www.udacity.com/).
+Hereby, a user can enter into a textbox a disaster message, which is then classified among 36 categories covering requests, medical help, etc.
 The positive results of these multioutput classification are shown by highlighting the corresponding categories.
 
 
-
-
-### Use case
-If an emergency message is entering an emergency service, their operator has to decide quickly what to do.
+### Use case / motivation
+If an emergency message is received by an emergency service, their operator has to decide quickly what to do.
 The callers are often under shock or panicked - so no information should get lost.
 In such moments time is valueable and seconds may decide over life or death.
+The following exemplary questions may arise: What emergency services are required? How many emergency cars of each service are needed? How many more are to be hold on stand-by? Are special technical machinery like helicopters or heavy fireworks cars in need? Could the situation escalate? ...
 A first help would be to understand the kind of emergency. Often it is even more than one.
-Such classification can support decision making by the operators and thus save valueable time.
+Given this problem, this app could be used in supporting the operator by detecting emergency categories such that he or she could make a quick but reasonable decision.
+The requirement is that message is transcripted.
 
 
-### Raw model
 
-This project is a simple raw model for a multiclass classification of text messages.
-Further possible applications include a tonality or topic analysis, a language or dialect analysis, or an analysis of diagnostic findings etc.
-This project also aims to produce a deployable web app.
+### Raw model / fields of application
+
+This project serves as a simple raw model for a multi-target classification of text messages. It consists of fundamental natural language processing steps
+and posseses a machine learning pipeline.
+There are various fields of direct application.
+Given a text, one may analyse its tonality or topic, the language, the dialect, or even diagnostic findings etc.
+
 
 
 
 
 ### Install/run instructions:
 0. Install the packages denoted in requirements_working_configuration.txt preferably in a virtual environment as exemplarily shown for the windows command prompt:
-
+```
       projectfolder:> python -m venv venv
       projectfolder:> cd venv\Scripts
       projectfolder\venv\Scripts> .\activate.bat
       projectfolder\venv\Scripts> cd ..\..
       projectfolder:> python -m pip install -r requirements_working_configuration.txt
-
+```
       Within your project folder "projectfolder" use the "python" command as long as the virtual environment is activated
       (if not working with/on the project, the virtual environment should be deactivated by executing projectfolder\venv\Scripts\deactivate.bat).
 
@@ -61,26 +64,28 @@ This project also aims to produce a deployable web app.
 
 ### Files in the repository
 ```
-app
+app            # contains files for running web app
 | - template
-| |- master.html # main page of web app
-| |- go.html # classification result page of web app
-|- run.py # Flask file that runs app
-data
-|- disaster_categories.csv # data to process
-|- disaster_messages.csv # data to process
-|- process_data.py
-|- InsertDatabaseName.db # database to save clean data to
-models
-|- transformer_module.py #
-|- train_classifier.py #
-|- classifier_module.py #
-|- classifier.pkl # saved model
+| |- master.html                       # main page of web app
+| |- go.html                           # classification result page of web app
+|- run.py                              # Flask file that runs app
+css            # style sheet folder
+data           # contains files covering ETL pipeline
+|- disaster_categories.csv             # data to process
+|- disaster_messages.csv               # data to process
+|- process_data.py                     # program for processing data and safe into following database file
+|- InsertDatabaseName.db               # database to save clean data to
+models         # contains files for building the ML model
+|- transformer_module.py               # module containing custom-made transformer and tokenizer
+|- train_classifier.py                 # program containg ML pipeline
+|- classifier_module.py                # module containing custom-made classifier
+|- classifier.pkl                      # saved model
+cars.png                               # image file containing cars - used in text intro
+ml_pipeline_output_example.txt         # output of ML pipeline
 README.md
-requirements.txt # list of required packages
-requirements_working_configuration.txt # packages of working configuration used during development
-use_case_example.png # picture showing use case
-ml_pipeline_output_example.txt
+requirements.txt                       # list of required packages
+requirements_working_configuration.txt # packages covering working configuration
+use_case_example.png                   # typical use case picture
 .gitignore
 ```
 
