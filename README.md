@@ -86,7 +86,6 @@ README.md
 requirements.txt                       # list of required packages
 requirements_working_configuration.txt # packages covering working configuration
 use_case_example.png                   # typical use case picture
-.gitignore
 ```
 
 ### Technical explanations
